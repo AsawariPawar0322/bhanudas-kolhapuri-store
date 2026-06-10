@@ -29,6 +29,6 @@ export PATH="$PATH:$(pwd)/flutter/bin"
 echo "=== Building Flutter Web Application ==="
 cd frontend
 flutter pub get
-flutter build web --release --web-renderer canvaskit
+flutter build web --release
 
 echo "=== Build Completed Successfully ==="
