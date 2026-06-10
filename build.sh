@@ -10,8 +10,9 @@ git clone https://github.com/flutter/flutter.git -b stable --depth 1
 # Add Flutter to PATH
 export PATH="$PATH:$(pwd)/flutter/bin"
 
-echo "=== Verifying Flutter Installation ==="
-flutter doctor
+# Pre-download development binaries
+echo "=== Pre-downloading Web Binaries ==="
+flutter precache --web
 
 echo "=== Building Flutter Web Application ==="
 cd frontend
