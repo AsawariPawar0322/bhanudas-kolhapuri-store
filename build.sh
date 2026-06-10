@@ -6,6 +6,10 @@ set -e
 # Print commands as they are executed for detailed Vercel logs
 set -x
 
+# Tell Flutter we are running in a non-interactive automated CI/CD bot environment
+export CI=true
+export BOT=true
+
 echo "=== Checking Flutter SDK ==="
 if [ -d "flutter" ]; then
   echo "=== Flutter directory exists, updating SDK ==="
@@ -20,10 +24,6 @@ fi
 
 # Add Flutter to PATH
 export PATH="$PATH:$(pwd)/flutter/bin"
-
-# Pre-download web binaries
-echo "=== Pre-downloading Web Binaries ==="
-flutter precache --web
 
 # Build
 echo "=== Building Flutter Web Application ==="
