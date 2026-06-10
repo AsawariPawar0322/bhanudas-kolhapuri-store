@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Artisan Intelligence - AI-powered, offline-first platform for traditional craftsmen.">
+    <title>Artisan Intelligence | AI for Traditional Craftsmen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Offline Status Banner -->
+    <div id="offline-banner" class="offline-banner hidden">
+        <span class="offline-icon">📴</span>
+        <span>You're offline — Everything still works!</span>
+        <span class="sync-status">Will sync when connected</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🧵</span>
+                <span class="logo-text">Artisan<span class="logo-highlight">AI</span></span>
+            </div>
+            <div class="nav-links">
+                <a href="#dashboard" class="nav-link active">Dashboard</a>
+                <a href="#predictions" class="nav-link">Predictions</a>
+                <a href="#orders" class="nav-link">Orders</a>
+                <a href="#sustainability" class="nav-link">Impact</a>
+            </div>
+            <div class="nav-actions">
+                <button class="voice-btn" id="voiceBtn" title="Voice Command">🎙️</button>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot online"></span>
+                    <span class="status-text">Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">🚀 Moonshot Project</div>
+                <h1 class="hero-title">AI That Understands <span class="gradient-text">Traditional Craft</span></h1>
+                <p class="hero-subtitle">Offline-first intelligence for artisans. Predict demand. Reduce waste. No internet required.</p>
+                <div class="hero-stats">
+                    <div class="stat-item"><span class="stat-number">2,847</span><span class="stat-label">Artisans</span></div>
+                    <div class="stat-item"><span class="stat-number">34%</span><span class="stat-label">Waste Reduced</span></div>
+                    <div class="stat-item"><span class="stat-number">89%</span><span class="stat-label">Accuracy</span></div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="ai-orb">
+                    <div class="orb-ring ring-1"></div>
+                    <div class="orb-ring ring-2"></div>
+                    <div class="orb-ring ring-3"></div>
+                    <div class="orb-core">AI</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="dashboard-section">
+        <div class="section-container">
+            <h2 class="section-title">Your Dashboard</h2>
+            <div class="dashboard-grid">
+                <!-- Prediction Card -->
+                <div class="dashboard-card prediction-card">
+                    <div class="card-header"><h3>Today's Demand</h3><span class="ai-badge">🧠 AI</span></div>
+                    <div class="prediction-meter"><div class="meter-fill" style="width:73%"></div><span class="meter-value">73%</span></div>
+                    <div class="prediction-factors">
+                        <div class="factor"><span>🎉 Festival in 3 days</span><span class="positive">+23%</span></div>
+                        <div class="factor"><span>☀️ Clear weather</span><span class="positive">+12%</span></div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <div class="card-header"><h3>Quick Actions</h3><span>📴 Offline Ready</span></div>
+                    <div class="quick-actions">
+                        <button class="action-btn primary">➕ New Order</button>
+                        <button class="action-btn secondary" id="voiceOrderBtn">🎙️ Voice Order</button>
+                        <button class="action-btn tertiary">📦 Stock</button>
+                        <button class="action-btn quaternary" id="syncBtn">🔄 Sync</button>
+                    </div>
+                </div>
+
+                <!-- Weekly Forecast -->
+                <div class="dashboard-card forecast-card">
+                    <div class="card-header"><h3>7-Day Forecast</h3></div>
+                    <div class="forecast-chart">
+                        <div class="chart-bar" style="--h:45%"><span>Mon</span></div>
+                        <div class="chart-bar" style="--h:62%"><span>Tue</span></div>
+                        <div class="chart-bar" style="--h:78%"><span>Wed</span></div>
+                        <div class="chart-bar today" style="--h:73%"><span>Today</span></div>
+                        <div class="chart-bar" style="--h:89%"><span>Fri</span></div>
+                        <div class="chart-bar peak" style="--h:95%"><span>Sat</span><em>🔥</em></div>
+                        <div class="chart-bar" style="--h:67%"><span>Sun</span></div>
+                    </div>
+                </div>
+
+                <!-- Sync Queue -->
+                <div class="dashboard-card sync-card">
+                    <div class="card-header"><h3>Offline Queue</h3><span id="queueCount">3 pending</span></div>
+                    <div class="sync-queue">
+                        <div class="queue-item"><span>📝 Order #1247</span><span class="pending">Pending</span></div>
+                        <div class="queue-item"><span>📦 Stock Update</span><span class="pending">Pending</span></div>
+                        <div class="queue-item"><span>💰 Payment</span><span class="pending">Pending</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Predictions Section -->
+    <section id="predictions" class="predictions-section">
+        <div class="section-container">
+            <h2 class="section-title">AI Predictions</h2>
+            <div class="insights-grid">
+                <div class="insight-card seasonal">
+                    <span class="insight-type">Seasonal</span>
+                    <h4>Wedding Season Surge</h4>
+                    <p>Expect <strong>3x demand</strong> in next 6 weeks</p>
+                </div>
+                <div class="insight-card festival">
+                    <span class="insight-type">Festival</span>
+                    <h4>Makar Sankranti in 3 Days</h4>
+                    <p>Best sellers: <strong>Black & Tan</strong></p>
+                </div>
+                <div class="insight-card weather">
+                    <span class="insight-type">Weather</span>
+                    <h4>Clear Week Ahead</h4>
+                    <p>Expect <strong>+15% footfall</strong></p>
+                </div>
+                <div class="insight-card recommendation">
+                    <span class="insight-type">Production Plan</span>
+                    <div class="rec-list">
+                        <div class="rec-item"><span class="color brown"></span>Classic Brown: 45</div>
+                        <div class="rec-item"><span class="color black"></span>Jet Black: 32</div>
+                        <div class="rec-item"><span class="color tan"></span>Tan Premium: 28</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Orders Section -->
+    <section id="orders" class="orders-section">
+        <div class="section-container">
+            <h2 class="section-title">Recent Orders</h2>
+            <div class="orders-list">
+                <div class="order-item"><span class="order-id">#1248</span><span>Rajesh Patil - Brown ×2</span><span>₹1,800</span><span class="status pending">Pending</span></div>
+                <div class="order-item offline"><span class="order-id">#1247</span><span>Suresh More - Black ×1</span><span>₹1,200</span><span class="status offline">📴 Offline</span></div>
+                <div class="order-item"><span class="order-id">#1246</span><span>Priya Deshmukh - Tan ×3</span><span>₹2,400</span><span class="status done">Done ✓</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section id="sustainability" class="sustainability-section">
+        <div class="section-container">
+            <h2 class="section-title">Your Impact</h2>
+            <div class="impact-grid">
+                <div class="impact-card"><span class="icon">♻️</span><span class="value">127 kg</span><span class="label">Waste Prevented</span></div>
+                <div class="impact-card"><span class="icon">🎯</span><span class="value">89%</span><span class="label">Accuracy</span></div>
+                <div class="impact-card"><span class="icon">🌿</span><span class="value">45 kg</span><span class="label">CO₂ Saved</span></div>
+                <div class="impact-card"><span class="icon">💰</span><span class="value">+23%</span><span class="label">Income Growth</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Modal -->
+    <div class="voice-modal" id="voiceModal">
+        <div class="voice-modal-content">
+            <button class="close-modal" id="closeModal">×</button>
+            <div class="voice-waves"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
+            <h3>Listening...</h3>
+            <p>Say: "New order for Rajesh, 2 brown chappals"</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <span class="logo-icon">🧵</span><span>Artisan<span class="highlight">AI</span></span>
+            <p>Offline-First • Human-First • Craft-First</p>
+            <p class="moonshot">🚀 Google Anti-Gravity Moonshot</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
