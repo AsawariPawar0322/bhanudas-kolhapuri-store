@@ -3,17 +3,29 @@
 # Exit on error
 set -e
 
-echo "=== Downloading Flutter SDK ==="
-# Clone Flutter stable branch with depth 1 for faster download
-git clone https://github.com/flutter/flutter.git -b stable --depth 1
+# Print commands as they are executed for detailed Vercel logs
+set -x
+
+echo "=== Checking Flutter SDK ==="
+if [ -d "flutter" ]; then
+  echo "=== Flutter directory exists, updating SDK ==="
+  cd flutter
+  git fetch origin
+  git reset --hard origin/stable
+  cd ..
+else
+  echo "=== Cloning Flutter SDK ==="
+  git clone https://github.com/flutter/flutter.git -b stable --depth 1
+fi
 
 # Add Flutter to PATH
 export PATH="$PATH:$(pwd)/flutter/bin"
 
-# Pre-download development binaries
+# Pre-download web binaries
 echo "=== Pre-downloading Web Binaries ==="
 flutter precache --web
 
+# Build
 echo "=== Building Flutter Web Application ==="
 cd frontend
 flutter pub get
