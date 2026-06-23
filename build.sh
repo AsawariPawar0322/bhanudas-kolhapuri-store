@@ -10,13 +10,18 @@ set -x
 export CI=true
 export BOT=true
 
+# Add safe.directory to bypass git dubious ownership errors in cached CI environments
+git config --global --add safe.directory '*'
+
 echo "=== Checking Flutter SDK ==="
 if [ -d "flutter" ]; then
   echo "=== Flutter directory exists, updating SDK ==="
-  cd flutter
-  git fetch origin
-  git reset --hard origin/stable
-  cd ..
+  git config --global --add safe.directory "$(pwd)/flutter"
+  (cd flutter && git fetch origin && git reset --hard origin/stable) || {
+    echo "=== Failed to update Flutter, cleaning and re-cloning ==="
+    rm -rf flutter
+    git clone https://github.com/flutter/flutter.git -b stable --depth 1
+  }
 else
   echo "=== Cloning Flutter SDK ==="
   git clone https://github.com/flutter/flutter.git -b stable --depth 1
