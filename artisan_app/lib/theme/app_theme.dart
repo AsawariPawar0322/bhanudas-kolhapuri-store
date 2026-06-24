@@ -64,7 +64,7 @@ class AppTheme {
         bodyMedium: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w400, color: textSecondary),
       ),
 
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: bgCard,
         elevation: 0,
         shape: RoundedRectangleBorder(

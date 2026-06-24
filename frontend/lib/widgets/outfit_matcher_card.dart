@@ -36,7 +36,10 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
   Map<String, String>? _customerProduct;
   String _analysisStatus = '';
 
-  // Preset outfit colors for simulator mode
+  // Controller for custom hex input
+  final TextEditingController _hexController = TextEditingController();
+
+  // Preset outfit colors for simulator mode (24+ rich traditional & modern colors)
   final List<Map<String, dynamic>> _outfitColors = [
     {'name': 'Mustard Yellow', 'color': Color(0xFFF59E0B), 'emoji': '💛'},
     {'name': 'Emerald Green', 'color': Color(0xFF10B981), 'emoji': '💚'},
@@ -44,107 +47,25 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
     {'name': 'Royal Indigo', 'color': Color(0xFF1D4ED8), 'emoji': '💙'},
     {'name': 'Charcoal Black', 'color': Color(0xFF374151), 'emoji': '🖤'},
     {'name': 'Ivory White', 'color': Color(0xFFF3F4F6), 'emoji': '🤍'},
+    {'name': 'Crimson Red', 'color': Color(0xFFDC2626), 'emoji': '❤️'},
+    {'name': 'Rose Pink', 'color': Color(0xFFEC4899), 'emoji': '💗'},
+    {'name': 'Coral Orange', 'color': Color(0xFFF97316), 'emoji': '🧡'},
+    {'name': 'Golden Amber', 'color': Color(0xFFD97706), 'emoji': '💛'},
+    {'name': 'Olive Green', 'color': Color(0xFF65A30D), 'emoji': '💚'},
+    {'name': 'Mint Green', 'color': Color(0xFF34D399), 'emoji': '💚'},
+    {'name': 'Teal Cyan', 'color': Color(0xFF0D9488), 'emoji': '💙'},
+    {'name': 'Sky Blue', 'color': Color(0xFF38BDF8), 'emoji': '💙'},
+    {'name': 'Navy Blue', 'color': Color(0xFF1E3A8A), 'emoji': '💙'},
+    {'name': 'Deep Purple', 'color': Color(0xFF6D28D9), 'emoji': '💜'},
+    {'name': 'Lavender', 'color': Color(0xFFC084FC), 'emoji': '💜'},
+    {'name': 'Terracotta Brown', 'color': Color(0xFF9A3412), 'emoji': '🤎'},
+    {'name': 'Sand Beige', 'color': Color(0xFFE2B07E), 'emoji': '🤎'},
+    {'name': 'Chocolate Brown', 'color': Color(0xFF78350F), 'emoji': '🤎'},
+    {'name': 'Slate Grey', 'color': Color(0xFF64748B), 'emoji': '🖤'},
+    {'name': 'Silver Metallic', 'color': Color(0xFFCBD5E1), 'emoji': '🤍'},
+    {'name': 'Sage Green', 'color': Color(0xFF86EFAC), 'emoji': '💚'},
+    {'name': 'Wine Red', 'color': Color(0xFF991B1B), 'emoji': '🍷'},
   ];
-
-  // Match rules containing both AI and Customer Suggestions
-  final Map<String, Map<String, Map<String, String>>> _matchRules = {
-    'Mustard Yellow': {
-      'ai': {
-        'name': 'Classic Tan Kolhapuri',
-        'price': '₹1,200',
-        'image': 'assets/images/classic_tan.png',
-        'score': '98%',
-        'advice': 'AI Suggestion: The warm, earthy tones of Classic Tan complement Mustard Yellow outfits, creating a balanced, traditional look.'
-      },
-      'customer': {
-        'name': 'Royal Wedding Gold',
-        'price': '₹2,500',
-        'image': 'assets/images/vibrant_blue.png',
-        'score': '92%',
-        'advice': 'Customer Choice: 86% of customers who wore Mustard Yellow also purchased Royal Wedding Gold for high-contrast festive occasions.'
-      }
-    },
-    'Emerald Green': {
-      'ai': {
-        'name': 'Royal Wedding Gold',
-        'price': '₹2,500',
-        'image': 'assets/images/vibrant_blue.png',
-        'score': '99%',
-        'advice': 'AI Suggestion: Gold and Emerald Green represent supreme festive elegance. The gold brocade straps offer a high-fashion contrast.'
-      },
-      'customer': {
-        'name': 'Classic Tan Kolhapuri',
-        'price': '₹1,200',
-        'image': 'assets/images/classic_tan.png',
-        'score': '89%',
-        'advice': 'Customer Choice: 78% of customers chose Classic Tan for a daily, grounded styling with green outfits.'
-      }
-    },
-    'Bridal Maroon': {
-      'ai': {
-        'name': 'Bridal Maroon Velvet',
-        'price': '₹2,499',
-        'image': 'assets/images/bridal_maroon.png',
-        'score': '99%',
-        'advice': 'AI Suggestion: Monochrome bridal perfection! The cushioned maroon velvet blends seamlessly with traditional lehengas.'
-      },
-      'customer': {
-        'name': 'Royal Wedding Gold',
-        'price': '₹2,500',
-        'image': 'assets/images/vibrant_blue.png',
-        'score': '95%',
-        'advice': 'Customer Choice: 91% of brides chose Royal Wedding Gold to match the intricate gold embroidery on maroon fabrics.'
-      }
-    },
-    'Royal Indigo': {
-      'ai': {
-        'name': 'Vibrant Indigo Blue',
-        'price': '₹1,599',
-        'image': 'assets/images/vibrant_blue.png',
-        'score': '95%',
-        'advice': 'AI Suggestion: Your blue outfit pairs brilliantly with hand-painted blue chappals for a modern, artistic appearance.'
-      },
-      'customer': {
-        'name': 'Classic Tan Kolhapuri',
-        'price': '₹1,200',
-        'image': 'assets/images/classic_tan.png',
-        'score': '91%',
-        'advice': 'Customer Choice: 82% of customers preferred Classic Tan as a neutral contrast to indigo and dark blue dresses.'
-      }
-    },
-    'Charcoal Black': {
-      'ai': {
-        'name': 'Daily Walk Black',
-        'price': '₹850',
-        'image': 'assets/images/modern_black.png',
-        'score': '97%',
-        'advice': 'AI Suggestion: Sleek black chappals match your dark outfit tones seamlessly, offering a modern minimal daily aesthetic.'
-      },
-      'customer': {
-        'name': 'Royal Wedding Gold',
-        'price': '₹2,500',
-        'image': 'assets/images/vibrant_blue.png',
-        'score': '93%',
-        'advice': 'Customer Choice: 75% of customers loved pairing black outfits with Royal Wedding Gold for evening party wear.'
-      }
-    },
-    'Ivory White': {
-      'ai': {
-        'name': 'Royal Tan Kolhapuri',
-        'price': '₹1,899',
-        'image': 'assets/images/classic_tan.png',
-        'score': '94%',
-        'advice': 'AI Suggestion: Contrast light white dresses with authentic Royal Tan leather to make a premium design statement.'
-      },
-      'customer': {
-        'name': 'Daily Walk Black',
-        'price': '₹850',
-        'image': 'assets/images/modern_black.png',
-        'score': '88%',
-        'advice': 'Customer Choice: 80% of customers bought Daily Walk Black to create a classic, striking monochrome contrast.'
-      }
-    },
-  };
 
   @override
   void initState() {
@@ -155,6 +76,7 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
 
   @override
   void dispose() {
+    _hexController.dispose();
     super.dispose();
   }
 
@@ -213,7 +135,10 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
         }
       });
       Timer(const Duration(milliseconds: 2400), () {
-        final option = _outfitColors.firstWhere((c) => c['name'] == _selectedSimulatorColor);
+        final option = _outfitColors.firstWhere(
+          (c) => c['name'] == _selectedSimulatorColor,
+          orElse: () => _outfitColors[1], // Emerald Green fallback
+        );
         final rgb = option['color'] as Color;
         _processColorMatching(rgb.red, rgb.green, rgb.blue);
       });
@@ -255,44 +180,178 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
     }
   }
 
-  void _processColorMatching(int r, int g, int b) {
-    if (!mounted) return;
-
+  String _getClosestColorName(Color c) {
     double minDistance = double.maxFinite;
-    Map<String, dynamic>? bestMatchOption;
-
-    for (var option in _outfitColors) {
-      final Color color = option['color'] as Color;
+    String closestName = 'Custom Shade';
+    for (var paletteColor in _outfitColors) {
+      final Color pc = paletteColor['color'] as Color;
       double distance = math.sqrt(
-        math.pow(r - color.red, 2) +
-        math.pow(g - color.green, 2) +
-        math.pow(b - color.blue, 2)
+        math.pow(c.red - pc.red, 2) +
+        math.pow(c.green - pc.green, 2) +
+        math.pow(c.blue - pc.blue, 2)
       );
       if (distance < minDistance) {
         minDistance = distance;
-        bestMatchOption = option;
+        closestName = paletteColor['name'];
       }
     }
+    return closestName;
+  }
 
-    final hexCode = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+  String _getColorFamily(String colorName) {
+    switch (colorName) {
+      case 'Bridal Maroon':
+      case 'Wine Red':
+      case 'Crimson Red':
+      case 'Rose Pink':
+      case 'Deep Purple':
+      case 'Lavender':
+        return 'red-pink';
+      case 'Emerald Green':
+      case 'Olive Green':
+      case 'Mint Green':
+      case 'Sage Green':
+        return 'green';
+      case 'Royal Indigo':
+      case 'Navy Blue':
+      case 'Sky Blue':
+      case 'Teal Cyan':
+        return 'blue';
+      case 'Mustard Yellow':
+      case 'Golden Amber':
+      case 'Coral Orange':
+      case 'Terracotta Brown':
+      case 'Sand Beige':
+      case 'Chocolate Brown':
+        return 'yellow-warm';
+      case 'Charcoal Black':
+      case 'Slate Grey':
+        return 'dark';
+      case 'Ivory White':
+      case 'Silver Metallic':
+      default:
+        return 'light';
+    }
+  }
+
+  void _processColorMatching(int r, int g, int b) {
+    if (!mounted) return;
+
+    final Color detectedColor = Color.fromARGB(255, r, g, b);
+    final String hexCode = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+    final String name = _getClosestColorName(detectedColor);
+    final String family = _getColorFamily(name);
+
+    Map<String, String> aiProduct = {};
+    Map<String, String> customerProduct = {};
+
+    switch (family) {
+      case 'red-pink':
+        aiProduct = {
+          'name': 'Bridal Maroon Velvet',
+          'price': '₹2,499',
+          'image': 'assets/images/bridal_maroon.png',
+          'score': '99%',
+          'advice': 'AI Suggestion: Monochromatic wedding elegance! Cushioned maroon velvet straps coordinate beautifully with your rich $name tones.'
+        };
+        customerProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '95%',
+          'advice': 'Customer Choice: 91% of brides style $name outfits with Royal Wedding Gold to match heavy gold embroidery.'
+        };
+        break;
+      case 'green':
+        aiProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '97%',
+          'advice': 'AI Suggestion: High-contrast elegance! Gleaming gold brocade straps offer a striking, premium contrast to your $name attire.'
+        };
+        customerProduct = {
+          'name': 'Classic Tan Kolhapuri',
+          'price': '₹1,200',
+          'image': 'assets/images/classic_tan.png',
+          'score': '89%',
+          'advice': 'Customer Choice: 78% of customers style $name outfits with Classic Tan for grounded daily wear.'
+        };
+        break;
+      case 'blue':
+        aiProduct = {
+          'name': 'Vibrant Indigo Blue',
+          'price': '₹1,599',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '96%',
+          'advice': 'AI Suggestion: Artistic matching! Modern hand-painted blue details on these chappals pair wonderfully with your cool $name tones.'
+        };
+        customerProduct = {
+          'name': 'Classic Tan Kolhapuri',
+          'price': '₹1,200',
+          'image': 'assets/images/classic_tan.png',
+          'score': '91%',
+          'advice': 'Customer Choice: 82% of customers choose a neutral Classic Tan contrast for $name dresses.'
+        };
+        break;
+      case 'yellow-warm':
+        aiProduct = {
+          'name': 'Classic Tan Kolhapuri',
+          'price': '₹1,200',
+          'image': 'assets/images/classic_tan.png',
+          'score': '98%',
+          'advice': 'AI Suggestion: Earthy harmony! The organic tan leather tones perfectly mirror warm $name shades for a traditional look.'
+        };
+        customerProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '92%',
+          'advice': 'Customer Choice: 86% of customers wore Royal Wedding Gold with $name outfits for dynamic festive contrast.'
+        };
+        break;
+      case 'dark':
+        aiProduct = {
+          'name': 'Daily Walk Black',
+          'price': '₹850',
+          'image': 'assets/images/modern_black.png',
+          'score': '99%',
+          'advice': 'AI Suggestion: Modern minimal aesthetic! Sleek black chappals create a continuous clean line matching your dark $name tones.'
+        };
+        customerProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '93%',
+          'advice': 'Customer Choice: 75% of customers pair dark outfits like $name with Royal Wedding Gold for high-end party wear.'
+        };
+        break;
+      case 'light':
+      default:
+        aiProduct = {
+          'name': 'Royal Tan Kolhapuri',
+          'price': '₹1,899',
+          'image': 'assets/images/royal_tan.jpg',
+          'score': '95%',
+          'advice': 'AI Suggestion: Sophisticated contrast! The premium double-stitched Royal Tan leather makes a rich statement against light $name garments.'
+        };
+        customerProduct = {
+          'name': 'Daily Walk Black',
+          'price': '₹850',
+          'image': 'assets/images/modern_black.png',
+          'score': '88%',
+          'advice': 'Customer Choice: 80% of customers prefer the striking monochrome contrast of Daily Walk Black with white/pastels.'
+        };
+        break;
+    }
 
     setState(() {
       _isAnalyzing = false;
-      _detectedColor = Color.fromARGB(255, r, g, b);
+      _detectedColor = detectedColor;
       _detectedHex = hexCode;
-      
-      if (bestMatchOption != null) {
-        final String matchedColorName = bestMatchOption['name'] ?? 'Emerald Green';
-        final rules = _matchRules[matchedColorName];
-        if (rules != null) {
-          _aiProduct = Map<String, String>.from(rules['ai']!);
-          _customerProduct = Map<String, String>.from(rules['customer']!);
-          
-          final distanceFactor = (1.0 - (minDistance / 441.0)).clamp(0.85, 0.99);
-          _aiProduct!['score'] = '${(distanceFactor * 100).toInt()}%';
-          _customerProduct!['score'] = '${((distanceFactor * 0.94) * 100).toInt()}%';
-        }
-      }
+      _selectedSimulatorColor = name;
+      _aiProduct = aiProduct;
+      _customerProduct = customerProduct;
     });
   }
 
@@ -331,7 +390,8 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                     onTap: () {
                       setState(() {
                         _isSimulatorMode = !_isSimulatorMode;
-                        _recommendedProduct = null;
+                        _aiProduct = null;
+                        _customerProduct = null;
                         _detectedColor = null;
                       });
                     },
@@ -428,7 +488,8 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                                 if (selected) {
                                   setState(() {
                                     _selectedSimulatorColor = name;
-                                    _recommendedProduct = null;
+                                    _aiProduct = null;
+                                    _customerProduct = null;
                                     _detectedColor = null;
                                   });
                                 }
@@ -437,6 +498,86 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                           );
                         }).toList(),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Text(
+                          'Or Custom Hex:',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textPrimary),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 36,
+                            child: TextField(
+                              controller: _hexController,
+                              style: const TextStyle(fontSize: 12, fontFamily: 'Courier', color: AppTheme.textPrimary),
+                              decoration: InputDecoration(
+                                hintText: '#E066FF',
+                                hintStyle: const TextStyle(color: AppTheme.textMuted),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: AppTheme.primaryColor),
+                                ),
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            final text = _hexController.text.trim();
+                            if (text.isNotEmpty) {
+                              try {
+                                String cleanHex = text.replaceAll('#', '');
+                                if (cleanHex.length == 6) {
+                                  int r = int.parse(cleanHex.substring(0, 2), radix: 16);
+                                  int g = int.parse(cleanHex.substring(2, 4), radix: 16);
+                                  int b = int.parse(cleanHex.substring(4, 6), radix: 16);
+                                  
+                                  setState(() {
+                                    _isAnalyzing = true;
+                                    _analysisStatus = 'Analyzing custom shade...';
+                                    _aiProduct = null;
+                                    _customerProduct = null;
+                                  });
+                                  
+                                  Timer(const Duration(milliseconds: 600), () {
+                                    _processColorMatching(r, g, b);
+                                  });
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Please enter a valid 6-character hex code (e.g. #FF5733)')),
+                                  );
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Invalid hex format. Use #RRGGBB.')),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('Match', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                   ],
