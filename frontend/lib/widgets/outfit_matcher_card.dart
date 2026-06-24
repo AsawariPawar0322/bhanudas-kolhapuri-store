@@ -32,7 +32,8 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
   // Dynamic analysis results
   Color? _detectedColor;
   String _detectedHex = '';
-  Map<String, String>? _recommendedProduct;
+  Map<String, String>? _aiProduct;
+  Map<String, String>? _customerProduct;
   String _analysisStatus = '';
 
   // Preset outfit colors for simulator mode
@@ -45,49 +46,103 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
     {'name': 'Ivory White', 'color': Color(0xFFF3F4F6), 'emoji': '🤍'},
   ];
 
-  // Match outfit color to the best chappal from catalog
-  final Map<String, Map<String, String>> _matchRules = {
+  // Match rules containing both AI and Customer Suggestions
+  final Map<String, Map<String, Map<String, String>>> _matchRules = {
     'Mustard Yellow': {
-      'name': 'Classic Tan Kolhapuri',
-      'price': '₹1,200',
-      'image': 'assets/images/classic_tan.png',
-      'score': '96%',
-      'advice': 'The warm, earthy tones of Classic Tan complement Mustard Yellow outfits beautifully, creating a perfect traditional look.'
+      'ai': {
+        'name': 'Classic Tan Kolhapuri',
+        'price': '₹1,200',
+        'image': 'assets/images/classic_tan.png',
+        'score': '98%',
+        'advice': 'AI Suggestion: The warm, earthy tones of Classic Tan complement Mustard Yellow outfits, creating a balanced, traditional look.'
+      },
+      'customer': {
+        'name': 'Royal Wedding Gold',
+        'price': '₹2,500',
+        'image': 'assets/images/vibrant_blue.png',
+        'score': '92%',
+        'advice': 'Customer Choice: 86% of customers who wore Mustard Yellow also purchased Royal Wedding Gold for high-contrast festive occasions.'
+      }
     },
     'Emerald Green': {
-      'name': 'Royal Wedding Gold',
-      'price': '₹2,500',
-      'image': 'assets/images/vibrant_blue.png',
-      'score': '98%',
-      'advice': 'Gold and Emerald Green represent supreme festive elegance. The gold brocade straps offer high contrast.'
+      'ai': {
+        'name': 'Royal Wedding Gold',
+        'price': '₹2,500',
+        'image': 'assets/images/vibrant_blue.png',
+        'score': '99%',
+        'advice': 'AI Suggestion: Gold and Emerald Green represent supreme festive elegance. The gold brocade straps offer a high-fashion contrast.'
+      },
+      'customer': {
+        'name': 'Classic Tan Kolhapuri',
+        'price': '₹1,200',
+        'image': 'assets/images/classic_tan.png',
+        'score': '89%',
+        'advice': 'Customer Choice: 78% of customers chose Classic Tan for a daily, grounded styling with green outfits.'
+      }
     },
     'Bridal Maroon': {
-      'name': 'Bridal Maroon Velvet',
-      'price': '₹2,499',
-      'image': 'assets/images/bridal_maroon.png',
-      'score': '99%',
-      'advice': 'Monochrome bridal perfection! Cushioned maroon velvet blends seamlessly with your outfit.'
+      'ai': {
+        'name': 'Bridal Maroon Velvet',
+        'price': '₹2,499',
+        'image': 'assets/images/bridal_maroon.png',
+        'score': '99%',
+        'advice': 'AI Suggestion: Monochrome bridal perfection! The cushioned maroon velvet blends seamlessly with traditional lehengas.'
+      },
+      'customer': {
+        'name': 'Royal Wedding Gold',
+        'price': '₹2,500',
+        'image': 'assets/images/vibrant_blue.png',
+        'score': '95%',
+        'advice': 'Customer Choice: 91% of brides chose Royal Wedding Gold to match the intricate gold embroidery on maroon fabrics.'
+      }
     },
     'Royal Indigo': {
-      'name': 'Vibrant Indigo Blue',
-      'price': '₹1,599',
-      'image': 'assets/images/vibrant_blue.png',
-      'score': '95%',
-      'advice': 'Your blue outfit pairs brilliantly with hand-painted blue chappals for a modern, artistic appearance.'
+      'ai': {
+        'name': 'Vibrant Indigo Blue',
+        'price': '₹1,599',
+        'image': 'assets/images/vibrant_blue.png',
+        'score': '95%',
+        'advice': 'AI Suggestion: Your blue outfit pairs brilliantly with hand-painted blue chappals for a modern, artistic appearance.'
+      },
+      'customer': {
+        'name': 'Classic Tan Kolhapuri',
+        'price': '₹1,200',
+        'image': 'assets/images/classic_tan.png',
+        'score': '91%',
+        'advice': 'Customer Choice: 82% of customers preferred Classic Tan as a neutral contrast to indigo and dark blue dresses.'
+      }
     },
     'Charcoal Black': {
-      'name': 'Daily Walk Black',
-      'price': '₹850',
-      'image': 'assets/images/modern_black.png',
-      'score': '94%',
-      'advice': 'Sleek black chappals match your dark outfit tones seamlessly, offering a modern minimal daily aesthetic.'
+      'ai': {
+        'name': 'Daily Walk Black',
+        'price': '₹850',
+        'image': 'assets/images/modern_black.png',
+        'score': '97%',
+        'advice': 'AI Suggestion: Sleek black chappals match your dark outfit tones seamlessly, offering a modern minimal daily aesthetic.'
+      },
+      'customer': {
+        'name': 'Royal Wedding Gold',
+        'price': '₹2,500',
+        'image': 'assets/images/vibrant_blue.png',
+        'score': '93%',
+        'advice': 'Customer Choice: 75% of customers loved pairing black outfits with Royal Wedding Gold for evening party wear.'
+      }
     },
     'Ivory White': {
-      'name': 'Royal Tan Kolhapuri',
-      'price': '₹1,899',
-      'image': 'assets/images/royal_tan.jpg',
-      'score': '92%',
-      'advice': 'Contrast light white dresses with authentic Royal Tan leather to make a premium design statement.'
+      'ai': {
+        'name': 'Royal Tan Kolhapuri',
+        'price': '₹1,899',
+        'image': 'assets/images/classic_tan.png',
+        'score': '94%',
+        'advice': 'AI Suggestion: Contrast light white dresses with authentic Royal Tan leather to make a premium design statement.'
+      },
+      'customer': {
+        'name': 'Daily Walk Black',
+        'price': '₹850',
+        'image': 'assets/images/modern_black.png',
+        'score': '88%',
+        'advice': 'Customer Choice: 80% of customers bought Daily Walk Black to create a classic, striking monochrome contrast.'
+      }
     },
   };
 
@@ -144,7 +199,8 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
   Future<void> _captureAndMatchOutfit() async {
     setState(() {
       _isAnalyzing = true;
-      _recommendedProduct = null;
+      _aiProduct = null;
+      _customerProduct = null;
       _detectedColor = null;
       _analysisStatus = _isSimulatorMode ? 'Scanning matching color...' : 'Capturing outfit frame...';
     });
@@ -227,11 +283,14 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
       
       if (bestMatchOption != null) {
         final String matchedColorName = bestMatchOption['name'] ?? 'Emerald Green';
-        final productData = _matchRules[matchedColorName];
-        if (productData != null) {
-          _recommendedProduct = Map<String, String>.from(productData);
+        final rules = _matchRules[matchedColorName];
+        if (rules != null) {
+          _aiProduct = Map<String, String>.from(rules['ai']!);
+          _customerProduct = Map<String, String>.from(rules['customer']!);
+          
           final distanceFactor = (1.0 - (minDistance / 441.0)).clamp(0.85, 0.99);
-          _recommendedProduct!['score'] = '${(distanceFactor * 100).toInt()}%';
+          _aiProduct!['score'] = '${(distanceFactor * 100).toInt()}%';
+          _customerProduct!['score'] = '${((distanceFactor * 0.94) * 100).toInt()}%';
         }
       }
     });
@@ -526,7 +585,7 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                   ),
 
                   // Dynamic Results Card
-                  if (_recommendedProduct != null) ...[
+                  if (_aiProduct != null && _customerProduct != null) ...[
                     const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -572,84 +631,44 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                           const Divider(color: Color(0xFFE2E8F0)),
                           const SizedBox(height: 12),
                           
-                          Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  _recommendedProduct!['image']!,
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Container(
-                                    width: 60,
-                                    height: 60,
-                                    color: const Color(0xFFF1F5F9),
-                                    child: const Icon(Icons.image, color: AppTheme.textMuted),
-                                  ),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isWide = constraints.maxWidth > 580;
+                              final suggestions = [
+                                _buildSuggestionCard(
+                                  title: '🤖 AI Suggested',
+                                  subtitle: 'Color Theory Match',
+                                  product: _aiProduct!,
+                                  themeColor: AppTheme.primaryColor,
                                 ),
-                              ),
-                              const SizedBox(width: 14),
+                                if (isWide) const SizedBox(width: 16) else const SizedBox(height: 16),
+                                _buildSuggestionCard(
+                                  title: '👥 Customer Choice',
+                                  subtitle: 'Popular Selection',
+                                  product: _customerProduct!,
+                                  themeColor: AppTheme.secondaryColor,
+                                ),
+                              ];
                               
-                              Expanded(
-                                child: Column(
+                              if (isWide) {
+                                return Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      _recommendedProduct!['name']!,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          _recommendedProduct!['price']!,
-                                          style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.primaryColor, fontSize: 13),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.green.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            '${_recommendedProduct!['score']} Match',
-                                            style: const TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    Expanded(child: suggestions[0]),
+                                    suggestions[1],
+                                    Expanded(child: suggestions[2]),
                                   ],
-                                ),
-                              ),
-                              
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryColor,
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                  minimumSize: Size.zero,
-                                  elevation: 0,
-                                ),
-                                onPressed: () {
-                                  widget.onProductSelected(_recommendedProduct!);
-                                },
-                                child: const Text('Buy Now', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                          
-                          const SizedBox(height: 12),
-                          const Divider(color: Color(0xFFE2E8F0)),
-                          const SizedBox(height: 6),
-                          
-                          Text(
-                            _recommendedProduct!['advice']!,
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              color: AppTheme.textSecondary,
-                              height: 1.4,
-                            ),
+                                );
+                              } else {
+                                return Column(
+                                  children: [
+                                    suggestions[0],
+                                    suggestions[1],
+                                    suggestions[2],
+                                  ],
+                                );
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -660,6 +679,116 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionCard({
+    required String title,
+    required String subtitle,
+    required Map<String, String> product,
+    required Color themeColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: themeColor.withOpacity(0.15), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: themeColor),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '${product['score']} Match',
+                  style: const TextStyle(color: Colors.green, fontSize: 8.5, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  product['image']!,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 48,
+                    height: 48,
+                    color: const Color(0xFFF1F5F9),
+                    child: const Icon(Icons.image, color: AppTheme.textMuted, size: 20),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product['name']!,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: AppTheme.textPrimary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      product['price']!,
+                      style: TextStyle(fontWeight: FontWeight.w800, color: themeColor, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Divider(color: Color(0xFFE2E8F0), height: 1),
+          const SizedBox(height: 8),
+          Text(
+            product['advice']!,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppTheme.textSecondary,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeColor,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+              ),
+              onPressed: () {
+                widget.onProductSelected(product);
+              },
+              child: const Text('Select this style', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
       ),
     );
   }
