@@ -17,14 +17,14 @@ echo "=== Checking Flutter SDK ==="
 if [ -d "flutter" ]; then
   echo "=== Flutter directory exists, updating SDK ==="
   git config --global --add safe.directory "$(pwd)/flutter"
-  (cd flutter && git fetch origin && git reset --hard origin/stable) || {
+  (cd flutter && git fetch origin && git reset --hard 3.24.0) || {
     echo "=== Failed to update Flutter, cleaning and re-cloning ==="
     rm -rf flutter
-    git clone https://github.com/flutter/flutter.git -b stable --depth 1
+    git clone https://github.com/flutter/flutter.git -b 3.24.0 --depth 1
   }
 else
   echo "=== Cloning Flutter SDK ==="
-  git clone https://github.com/flutter/flutter.git -b stable --depth 1
+  git clone https://github.com/flutter/flutter.git -b 3.24.0 --depth 1
 fi
 
 # Add Flutter to PATH
