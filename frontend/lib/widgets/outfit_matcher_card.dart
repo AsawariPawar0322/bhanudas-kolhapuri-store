@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:html' as html;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'webcam_preview.dart';
 
-// Conditionally import dart:js only on web to avoid compile errors on other platforms
-import 'dart:js' as js;
+// Platform-agnostic conditional imports
+import 'webcam_view_stub.dart'
+    if (dart.library.js) 'webcam_view_web.dart'
+    if (dart.library.io) 'webcam_view_mobile.dart';
+
+import 'outfit_analyzer_stub.dart'
+    if (dart.library.js) 'outfit_analyzer_web.dart'
+    if (dart.library.io) 'outfit_analyzer_mobile.dart';
 
 class OutfitMatcherCard extends StatefulWidget {
   final Function(Map<String, String>) onProductSelected;
@@ -22,7 +25,7 @@ class OutfitMatcherCard extends StatefulWidget {
 }
 
 class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTickerProviderStateMixin {
-  html.VideoElement? _webcamVideoElement;
+  dynamic _webcamVideoElement;
   bool _isCameraInitialized = false;
   bool _isCameraPermissionDenied = false;
   bool _isAnalyzing = false;
@@ -38,6 +41,9 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
 
   // Controller for custom hex input
   final TextEditingController _hexController = TextEditingController();
+
+  // Timer for real-time live hover analysis
+  Timer? _hoverAnalysisTimer;
 
   // Preset outfit colors for simulator mode (24+ rich traditional & modern colors)
   final List<Map<String, dynamic>> _outfitColors = [
@@ -70,34 +76,15 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _injectJSAnalyzer();
+    OutfitAnalyzer.init();
     _initializeWebcam();
   }
 
   @override
   void dispose() {
     _hexController.dispose();
+    _hoverAnalysisTimer?.cancel();
     super.dispose();
-  }
-
-  void _injectJSAnalyzer() {
-    if (kIsWeb) {
-      js.context.callMethod('eval', ["""
-        window.analyzeOutfitVideoColor = function(videoElement, callback) {
-          try {
-            var canvas = document.createElement('canvas');
-            canvas.width = 10;
-            canvas.height = 10;
-            var ctx = canvas.getContext('2d');
-            ctx.drawImage(videoElement, 0, 0, 10, 10);
-            var data = ctx.getImageData(5, 5, 1, 1).data;
-            callback(data[0], data[1], data[2]);
-          } catch(e) {
-            callback(16, 185, 129); // Fallback emerald green
-          }
-        };
-      """]);
-    }
   }
 
   Future<void> _initializeWebcam() async {
@@ -115,6 +102,7 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
         _isCameraInitialized = false;
         _isSimulatorMode = true; // Auto fallback to simulator
       });
+      _hoverAnalysisTimer?.cancel();
     }
   }
 
@@ -158,18 +146,9 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
         setState(() => _analysisStatus = 'Analyzing pixels & textures...');
       }
 
-      if (kIsWeb) {
-        js.context.callMethod('window.analyzeOutfitVideoColor', [
-          _webcamVideoElement,
-          js.allowInterop((r, g, b) {
-            _processColorMatching(r, g, b);
-          })
-        ]);
-      } else {
-        Timer(const Duration(seconds: 1), () {
-          _processColorMatching(16, 185, 129); // Mock green
-        });
-      }
+      OutfitAnalyzer.analyze(_webcamVideoElement, (r, g, b) {
+        _processColorMatching(r, g, b);
+      });
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -355,6 +334,137 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
     });
   }
 
+  void _startLiveHoverAnalysis() {
+    _hoverAnalysisTimer?.cancel();
+    _hoverAnalysisTimer = Timer.periodic(const Duration(milliseconds: 350), (timer) {
+      if (!_isAnalyzing && _isCameraInitialized && !_isSimulatorMode && _webcamVideoElement != null) {
+        OutfitAnalyzer.analyze(_webcamVideoElement, (r, g, b) {
+          if (mounted && !_isAnalyzing && !_isSimulatorMode) {
+            _updateHoverMatch(r, g, b);
+          }
+        });
+      }
+    });
+  }
+
+  void _updateHoverMatch(int r, int g, int b) {
+    final Color hoverColor = Color.fromARGB(255, r, g, b);
+    final String hexCode = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+    final String name = _getClosestColorName(hoverColor);
+    final String family = _getColorFamily(name);
+
+    Map<String, String> aiProduct = {};
+    Map<String, String> customerProduct = {};
+
+    switch (family) {
+      case 'red-pink':
+        aiProduct = {
+          'name': 'Bridal Maroon Velvet',
+          'price': '₹2,499',
+          'image': 'assets/images/bridal_maroon.png',
+          'score': '99%',
+          'advice': 'AI Suggestion: Monochromatic wedding elegance! Cushioned maroon velvet straps coordinate beautifully with your rich $name tones.'
+        };
+        customerProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '95%',
+          'advice': 'Customer Choice: 91% of brides style $name outfits with Royal Wedding Gold to match heavy gold embroidery.'
+        };
+        break;
+      case 'green':
+        aiProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '97%',
+          'advice': 'AI Suggestion: High-contrast elegance! Gleaming gold brocade straps offer a striking, premium contrast to your $name attire.'
+        };
+        customerProduct = {
+          'name': 'Classic Tan Kolhapuri',
+          'price': '₹1,200',
+          'image': 'assets/images/classic_tan.png',
+          'score': '89%',
+          'advice': 'Customer Choice: 78% of customers style $name outfits with Classic Tan for grounded daily wear.'
+        };
+        break;
+      case 'blue':
+        aiProduct = {
+          'name': 'Vibrant Indigo Blue',
+          'price': '₹1,599',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '96%',
+          'advice': 'AI Suggestion: Artistic matching! Modern hand-painted blue details on these chappals pair wonderfully with your cool $name tones.'
+        };
+        customerProduct = {
+          'name': 'Classic Tan Kolhapuri',
+          'price': '₹1,200',
+          'image': 'assets/images/classic_tan.png',
+          'score': '91%',
+          'advice': 'Customer Choice: 82% of customers choose a neutral Classic Tan contrast for $name dresses.'
+        };
+        break;
+      case 'yellow-warm':
+        aiProduct = {
+          'name': 'Classic Tan Kolhapuri',
+          'price': '₹1,200',
+          'image': 'assets/images/classic_tan.png',
+          'score': '98%',
+          'advice': 'AI Suggestion: Earthy harmony! The organic tan leather tones perfectly mirror warm $name shades for a traditional look.'
+        };
+        customerProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '92%',
+          'advice': 'Customer Choice: 86% of customers wore Royal Wedding Gold with $name outfits for dynamic festive contrast.'
+        };
+        break;
+      case 'dark':
+        aiProduct = {
+          'name': 'Daily Walk Black',
+          'price': '₹850',
+          'image': 'assets/images/modern_black.png',
+          'score': '99%',
+          'advice': 'AI Suggestion: Modern minimal aesthetic! Sleek black chappals create a continuous clean line matching your dark $name tones.'
+        };
+        customerProduct = {
+          'name': 'Royal Wedding Gold',
+          'price': '₹2,500',
+          'image': 'assets/images/vibrant_blue.png',
+          'score': '93%',
+          'advice': 'Customer Choice: 75% of customers pair dark outfits like $name with Royal Wedding Gold for high-end party wear.'
+        };
+        break;
+      case 'light':
+      default:
+        aiProduct = {
+          'name': 'Royal Tan Kolhapuri',
+          'price': '₹1,899',
+          'image': 'assets/images/royal_tan.jpg',
+          'score': '95%',
+          'advice': 'AI Suggestion: Sophisticated contrast! The premium double-stitched Royal Tan leather makes a rich statement against light $name garments.'
+        };
+        customerProduct = {
+          'name': 'Daily Walk Black',
+          'price': '₹850',
+          'image': 'assets/images/modern_black.png',
+          'score': '88%',
+          'advice': 'Customer Choice: 80% of customers prefer the striking monochrome contrast of Daily Walk Black with white/pastels.'
+        };
+        break;
+    }
+
+    setState(() {
+      _detectedColor = hoverColor;
+      _detectedHex = hexCode;
+      _selectedSimulatorColor = name;
+      _aiProduct = aiProduct;
+      _customerProduct = customerProduct;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -394,6 +504,11 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                         _customerProduct = null;
                         _detectedColor = null;
                       });
+                      if (_isSimulatorMode) {
+                        _hoverAnalysisTimer?.cancel();
+                      } else {
+                        _startLiveHoverAnalysis();
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -602,7 +717,7 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                           Positioned.fill(
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: WebcamPreview(
+                              child: createWebcamPreview(
                                 onVideoCreated: (videoElement) {
                                   _webcamVideoElement = videoElement;
                                   if (mounted) {
@@ -610,6 +725,7 @@ class _OutfitMatcherCardState extends State<OutfitMatcherCard> with SingleTicker
                                       _isCameraPermissionDenied = false;
                                       _isCameraInitialized = true;
                                     });
+                                    _startLiveHoverAnalysis();
                                   }
                                 },
                                 onError: (errorMsg) {
